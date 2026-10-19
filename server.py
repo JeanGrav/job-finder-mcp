@@ -1,3 +1,4 @@
+
 from mcp.server import MCPServer
 from database import get_connection
 
@@ -32,6 +33,7 @@ def applications_schema() -> list[dict]:
         for row in rows
     ]
 
+
 @mcp.tool()
 def list_applications() -> list[dict]:
     """Return all job applications."""
@@ -42,7 +44,8 @@ def list_applications() -> list[dict]:
                 SELECT
                     id,
                     title,
-                    description,
+                    company,
+                    location,
                     link,
                     apply_date,
                     status
@@ -56,10 +59,11 @@ def list_applications() -> list[dict]:
         {
             "id": row[0],
             "title": row[1],
-            "description": row[2],
-            "link": row[3],
-            "apply_date": str(row[4]) if row[4] else None,
-            "status": row[5],
+            "company": row[2],
+            "location": row[3],
+            "link": row[4],
+            "apply_date": str(row[5]) if row[5] else None,
+            "status": row[6],
         }
         for row in rows
     ]
@@ -75,7 +79,8 @@ def get_application(application_id: int) -> dict:
                 SELECT
                     id,
                     title,
-                    description,
+                    company,
+                    location,
                     link,
                     apply_date,
                     status
@@ -93,16 +98,19 @@ def get_application(application_id: int) -> dict:
     return {
         "id": row[0],
         "title": row[1],
-        "description": row[2],
-        "link": row[3],
-        "apply_date": str(row[4]) if row[4] else None,
-        "status": row[5],
+        "company": row[2],
+        "location": row[3],
+        "link": row[4],
+        "apply_date": str(row[5]) if row[5] else None,
+        "status": row[6],
     }
+
 
 @mcp.tool()
 def create_application(
     title: str,
-    description: str | None = None,
+    company: str | None = None,
+    location: str | None = None,
     link: str | None = None,
     apply_date: str | None = None,
     status: str | None = None,
@@ -114,16 +122,25 @@ def create_application(
             cur.execute("""
                 INSERT INTO applications (
                     title,
-                    description,
+                    company,
+                    location,
                     link,
                     apply_date,
                     status
                 )
-                VALUES (%s, %s, %s, %s, %s)
-                RETURNING id, title, description, link, apply_date, status;
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING
+                    id,
+                    title,
+                    company,
+                    location,
+                    link,
+                    apply_date,
+                    status;
             """, (
                 title,
-                description,
+                company,
+                location,
                 link,
                 apply_date,
                 status,
@@ -134,11 +151,13 @@ def create_application(
     return {
         "id": row[0],
         "title": row[1],
-        "description": row[2],
-        "link": row[3],
-        "apply_date": str(row[4]) if row[4] else None,
-        "status": row[5],
+        "company": row[2],
+        "location": row[3],
+        "link": row[4],
+        "apply_date": str(row[5]) if row[5] else None,
+        "status": row[6],
     }
+
 
 if __name__ == "__main__":
     mcp.run()
